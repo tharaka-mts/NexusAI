@@ -1,8 +1,4 @@
-export default function DashboardLayout({
-    children,
-}: {
-    children: React.ReactNode;
-}) {
+const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     return (
         <div className="min-h-screen flex">
             <aside className="w-64 border-r bg-muted/20 p-4">
@@ -19,3 +15,5 @@ export default function DashboardLayout({
         </div>
     );
 }
+
+export default DashboardLayout;

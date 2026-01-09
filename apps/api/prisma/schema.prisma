@@ -1,0 +1,215 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum DocumentSourceType {
+  PLAIN_TEXT
+  MEETING_TRANSCRIPT
+  URL
+  FILE
+}
+
+enum AiProvider {
+  GEMINI
+  OLLAMA
+}
+
+enum AiRunStatus {
+  QUEUED
+  RUNNING
+  SUCCEEDED
+  FAILED
+  CACHED
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+  BLOCKED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  username     String   @unique
+  name         String?
+
+  // For email/password accounts. For Google-only accounts, this can be null.
+  passwordHash String?
+
+  // For Google OAuth accounts (sub/subject). Unique if present.
+  googleId     String?  @unique
+
+  role         UserRole @default(USER)
+
+  documents    Document[]
+  tasks        Task[]
+  aiRuns       AiRun[]
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([createdAt])
+}
+
+//
+// Guest identity used for "1 free run" gating.
+// Store a random UUID in an httpOnly cookie called guestId.
+// Recommended: store a hashed/opaque form here if you want extra safety.
+//
+model GuestSession {
+  id            String   @id @default(uuid())
+
+  // Value derived from cookie guestId (can be same UUID, or a hash of it).
+  // Must be unique so we can find a guest session reliably.
+  guestKey      String   @unique
+
+  createdAt     DateTime @default(now())
+  lastSeenAt    DateTime @updatedAt
+
+  // Enforce "exactly 1 successful free run" in DB:
+  freeRunUsedAt DateTime?
+  freeRunAiRunId String? @unique
+
+  // Relations
+  aiRuns        AiRun[]
+  documents     Document[]
+
+  @@index([createdAt])
+}
+
+model Document {
+  id          String             @id @default(uuid())
+
+  // Either user-owned OR guest-owned (enforced in service layer)
+  userId         String?
+  user           User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  guestSessionId String?
+  guestSession   GuestSession?    @relation(fields: [guestSessionId], references: [id], onDelete: SetNull)
+
+  title       String?
+  content     String
+  sourceType  DocumentSourceType  @default(PLAIN_TEXT)
+
+  // Compute sha256(content) server-side
+  contentHash String
+
+  summaries   Summary[]
+  tasks       Task[]
+  aiRuns      AiRun[]
+
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([guestSessionId, createdAt])
+  @@index([userId, contentHash])
+  @@index([guestSessionId, contentHash])
+}
+
+model AiRun {
+  id              String      @id @default(uuid())
+
+  // Either user-run OR guest-run (enforced in service layer)
+  userId          String?
+  user            User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  guestSessionId  String?
+  guestSession    GuestSession? @relation(fields: [guestSessionId], references: [id], onDelete: SetNull)
+
+  documentId      String
+  document        Document    @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  provider        AiProvider
+  model           String
+  options         Json        @default("{}")
+  status          AiRunStatus @default(QUEUED)
+
+  cacheKey         String?
+  promptTokens     Int?
+  completionTokens Int?
+  totalTokens      Int?
+  costUsd          Decimal?    @db.Decimal(10, 4)
+
+  startedAt        DateTime?
+  finishedAt       DateTime?
+  errorMessage     String?
+
+  summary          Summary?
+  tasks            Task[]       // Note: for guests you may choose NOT to persist tasks
+
+  createdAt        DateTime     @default(now())
+
+  @@index([userId, createdAt])
+  @@index([guestSessionId, createdAt])
+  @@index([documentId, createdAt])
+  @@index([cacheKey])
+}
+
+model Summary {
+  id              String   @id @default(uuid())
+
+  documentId      String
+  document        Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  aiRunId         String   @unique
+  aiRun           AiRun    @relation(fields: [aiRunId], references: [id], onDelete: Cascade)
+
+  shortSummary    String
+  detailedSummary String?
+  highlights      Json     @default("[]")
+
+  createdAt       DateTime @default(now())
+
+  @@index([documentId, createdAt])
+}
+
+model Task {
+  id          String       @id @default(uuid())
+
+  // Tasks are owned by authenticated users (saved in dashboard).
+  // Guest tasks can still be returned in API response but not persisted.
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  documentId  String?
+  document    Document?    @relation(fields: [documentId], references: [id], onDelete: SetNull)
+
+  aiRunId     String?
+  aiRun       AiRun?       @relation(fields: [aiRunId], references: [id], onDelete: SetNull)
+
+  title       String
+  description String?
+  status      TaskStatus   @default(TODO)
+  priority    TaskPriority @default(MEDIUM)
+
+  dueDate     DateTime?
+  assignee    String?
+  completedAt DateTime?
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([userId, status, createdAt])
+  @@index([userId, dueDate])
+}

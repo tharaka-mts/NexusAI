@@ -1,9 +1,6 @@
-import { Button } from '@/components/ui/button'; // Assuming shadcn button exists or will exist. 
-// Wait, I haven't added button component yet. I ran shadcn init but didn't add button. 
-// I should add button component via shadcn CLI or just use standard HTML for now to avoid errors if button missing.
-// Actually, I can use a standard button for the placeholder.
+import { Button } from '@/components/ui/Button';
 
-export default function LandingPage() {
+const LandingPage = () => {
     return (
         <div className="min-h-screen flex flex-col items-center justify-center p-8 gap-8">
             <header className="text-center space-y-4">
@@ -19,9 +16,7 @@ export default function LandingPage() {
                     placeholder="Paste meeting transcript or text here..."
                 />
                 <div className="flex justify-end">
-                    <button className="bg-primary text-primary-foreground px-6 py-2 rounded-md font-medium hover:opacity-90 transition-opacity">
-                        Generate Summary
-                    </button>
+                    <Button>Generate Summary</Button>
                 </div>
             </main>
 
@@ -31,3 +26,6 @@ export default function LandingPage() {
         </div>
     );
 }
+
+export default LandingPage;
+

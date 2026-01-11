@@ -3,3 +3,5 @@ ARCHITECTURE.md
 prompt.md
 .DS_Store
 .vscode
+
+apps/api/.env

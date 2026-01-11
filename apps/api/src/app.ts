@@ -31,6 +31,18 @@ app.get('/health', (req, res) => {
 });
 
 // TODO: Routes
+// DB connection check TEMP route
+import { prisma } from './config/prisma';
+
+app.get('/db-check', async (req, res, next) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
 
 // Error Handler Placeholder
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

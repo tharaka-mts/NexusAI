@@ -10,7 +10,8 @@ const envSchema = z.object({
     PORT: z.string().default('4000'),
     DATABASE_URL: z.string(),
     CORS_ORIGIN: z.string().default('http://localhost:3000'),
-    // Add more as needed
+    REDIS_URL: z.string().default('redis://localhost:6379'),
+    COOKIE_SECURE: z.string().transform((v) => v === 'true').default('false'),
 });
 
 export const env = envSchema.parse(process.env);

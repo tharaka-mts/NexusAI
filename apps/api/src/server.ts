@@ -2,6 +2,7 @@ import { app } from './app';
 import { env } from './config/env';
 import { logger } from './config/logger';
 import { prisma } from './config/prisma';
+import { redis } from './config/redis';
 
 const PORT = env.PORT;
 
@@ -20,6 +21,12 @@ const shutdown = async (signal: string) => {
             // Disconnect Prisma
             await prisma.$disconnect();
             logger.info('Prisma disconnected');
+
+            // Disconnect Redis
+            if (redis.isOpen) {
+                await redis.quit();
+                logger.info('Redis disconnected');
+            }
 
             logger.info('Process terminated');
             process.exit(0);

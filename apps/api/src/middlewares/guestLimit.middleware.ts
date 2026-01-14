@@ -4,6 +4,7 @@ import { guestsService } from '../modules/guests/guests.service';
 
 export const guestLimitMiddleware = async (req: Request, res: Response, next: NextFunction) => {
     // If user is authenticated, allow
+    // If user is authenticated, allow
     if ((req as any).user) {
         return next();
     }

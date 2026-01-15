@@ -11,7 +11,17 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import AuthCard from '@/components/common/AuthCard';
 import GoogleAuthButton from '@/components/common/GoogleAuthButton';
+import { useRouter } from 'next/navigation';
+import { apiFetch } from '@/lib/apiClient';
+import { useAuthStore } from '@/store/useAuthStore';
 import { notify } from '@/lib/notify';
+
+interface User {
+    id: string;
+    email: string;
+    username?: string;
+    googleId?: string;
+}
 
 // Regex for basic password strength: min 8, at least one number
 const passwordStrengthRegex = /^(?=.*[0-9])(?=.{8,})/;
@@ -29,6 +39,8 @@ const signUpSchema = z.object({
 type SignUpValues = z.infer<typeof signUpSchema>;
 
 const SignUpPage = () => {
+    const { setUser } = useAuthStore();
+    const router = useRouter();
     const {
         register,
         handleSubmit,
@@ -38,13 +50,17 @@ const SignUpPage = () => {
     });
 
     const onSubmit = async (data: SignUpValues) => {
-        // Mock API call
-        console.log('Sign up data:', data);
-
-        // Simulate network delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        notify.success('Submitted (mock). Backend hookup later.');
+        try {
+            const response = await apiFetch<{ data: User }>('/auth/register', {
+                method: 'POST',
+                body: JSON.stringify(data),
+            });
+            // setUser(response.data);
+            notify.success('Account created successfully!');
+            router.push('/signin');
+        } catch (error: any) {
+            notify.error(error.message || 'Failed to create account');
+        }
     };
 
     const onError = (errors: any) => {

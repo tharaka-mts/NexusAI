@@ -27,7 +27,9 @@ const GoogleIcon = () => (
 
 const GoogleAuthButton = ({ text = "Continue with Google" }: { text?: string }) => {
     const handleClick = () => {
-        notify.info('Google sign-in coming soon');
+        // Redirect to backend Google Auth endpoint
+        const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000';
+        window.location.href = `${API_BASE_URL}/auth/google`;
     };
 
     return (

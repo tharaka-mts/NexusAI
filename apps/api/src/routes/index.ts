@@ -12,13 +12,16 @@ const router = Router();
 // Health & Debug
 router.use('/health', healthRoutes);
 
-router.use('/guest', guestRoutes); 
+router.use('/guest', guestRoutes);
 
 // Auth Routes
 router.use('/auth', authRoutes);
 
+import { tasksRoutes } from '@/modules/tasks/tasks.routes';
+
 // AI Routes
 router.use('/ai', aiRoutes);
 router.use('/documents', documentsRoutes);
+router.use('/tasks', tasksRoutes);
 
 export const routes = router;

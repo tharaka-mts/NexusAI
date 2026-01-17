@@ -31,6 +31,12 @@ export const apiFetch = async <T>(
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
+    if (response.status === 401) {
+      // 401 handling is now managed by the AuthProvider/Query layer
+      // We just let it throw or return empty object as needed, but here we throw
+      // so the caller knows it failed.
+    }
+
     throw new ApiError(
       data.message || 'API request failed',
       response.status,

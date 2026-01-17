@@ -11,30 +11,25 @@ interface User {
 interface AuthState {
     user: User | null;
     isAuthenticated: boolean;
+    isInitialized: boolean;
     isLoading: boolean;
 
     setUser: (user: User | null) => void;
-    checkAuth: () => Promise<void>;
     logout: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
     user: null,
     isAuthenticated: false,
-    isLoading: true, // Start loading to check auth on mount
+    isInitialized: false,
+    isLoading: true,
 
-    setUser: (user) => set({ user, isAuthenticated: !!user, isLoading: false }),
-
-    checkAuth: async () => {
-        set({ isLoading: true });
-        try {
-            const response = await apiFetch<{ data: User }>('/auth/me');
-            set({ user: response.data, isAuthenticated: true, isLoading: false });
-        } catch (error) {
-            // 401 or network error -> not authenticated
-            set({ user: null, isAuthenticated: false, isLoading: false });
-        }
-    },
+    setUser: (user) => set({
+        user,
+        isAuthenticated: !!user,
+        isLoading: false,
+        isInitialized: true
+    }),
 
     logout: async () => {
         set({ isLoading: true });
@@ -43,9 +38,13 @@ export const useAuthStore = create<AuthState>((set) => ({
         } catch (error) {
             console.error('Logout failed', error);
         } finally {
-            // Always clear local state
-            set({ user: null, isAuthenticated: false, isLoading: false });
-            window.location.href = '/'; // Hard redirect to clear any in-memory states
+            set({
+                user: null,
+                isAuthenticated: false,
+                isLoading: false,
+                isInitialized: true
+            });
+            window.location.href = '/';
         }
     },
 }));

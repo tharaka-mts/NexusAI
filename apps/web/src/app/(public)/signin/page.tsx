@@ -11,7 +11,18 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import AuthCard from '@/components/common/AuthCard';
 import GoogleAuthButton from '@/components/common/GoogleAuthButton';
+import { useRouter } from 'next/navigation';
+import { apiFetch } from '@/lib/apiClient';
+import { useAuthStore } from '@/store/useAuthStore';
 import { notify } from '@/lib/notify';
+
+// Define User type locally or import it if shared (mocking for now to match store)
+interface User {
+    id: string;
+    email: string;
+    username?: string;
+    googleId?: string;
+}
 
 const signInSchema = z.object({
     email: z.string().email('Please enter a valid email address'),
@@ -21,6 +32,8 @@ const signInSchema = z.object({
 type SignInValues = z.infer<typeof signInSchema>;
 
 const SignInPage = () => {
+    const { setUser } = useAuthStore();
+    const router = useRouter();
     const {
         register,
         handleSubmit,
@@ -30,13 +43,17 @@ const SignInPage = () => {
     });
 
     const onSubmit = async (data: SignInValues) => {
-        // Mock API call
-        console.log('Sign in data:', data);
-
-        // Simulate network delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        notify.success('Submitted (mock). Backend hookup later.');
+        try {
+            const response = await apiFetch<{ data: User }>('/auth/login', {
+                method: 'POST',
+                body: JSON.stringify(data),
+            });
+            setUser(response.data);
+            notify.success('Welcome back!');
+            router.push('/dashboard');
+        } catch (error: any) {
+            notify.error(error.message || 'Failed to sign in');
+        }
     };
 
     const onError = () => {

@@ -2,10 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuthStore } from '@/store/useAuthStore';
 import { Button } from './Button';
+import UserMenu from '@/components/common/UserMenu';
 
 const NavBar = () => {
     const pathname = usePathname();
+    const { isAuthenticated, isLoading } = useAuthStore();
     const isAuthPage = pathname === '/signin' || pathname === '/signup';
 
     return (
@@ -22,21 +25,31 @@ const NavBar = () => {
                         </span>
                     </Link>
 
-                    {/* Right side - Auth buttons (Hidden on auth pages) */}
-                    {!isAuthPage && (
-                        <div className="flex items-center gap-4">
-                            <Link href="/signin">
-                                <Button variant="ghost" className="text-muted-foreground hover:text-foreground font-medium">
-                                    Sign in
-                                </Button>
-                            </Link>
-                            <Link href="/signup">
-                                <Button className="bg-primary hover:bg-primary/90 text-white font-semibold shadow-md border-0">
-                                    Sign up
-                                </Button>
-                            </Link>
-                        </div>
-                    )}
+                    {/* Right side */}
+                    <div className="flex items-center gap-4">
+                        {!isLoading && (
+                            <>
+                                {isAuthenticated ? (
+                                    <UserMenu />
+                                ) : (
+                                    !isAuthPage && (
+                                        <>
+                                            <Link href="/signin">
+                                                <Button variant="ghost" className="text-muted-foreground hover:text-foreground font-medium">
+                                                    Sign in
+                                                </Button>
+                                            </Link>
+                                            <Link href="/signup">
+                                                <Button className="bg-primary hover:bg-primary/90 text-white font-semibold shadow-md border-0">
+                                                    Sign up
+                                                </Button>
+                                            </Link>
+                                        </>
+                                    )
+                                )}
+                            </>
+                        )}
+                    </div>
                 </div>
             </div>
         </nav>

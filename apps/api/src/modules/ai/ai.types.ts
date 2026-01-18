@@ -4,7 +4,9 @@ export type CreateAiRunInput = {
     text: string;
     userId?: string;
     guestSessionId?: string;
-    guestKey?: string; // Needed for guest usage tracking
+    guestKey?: string;
+    title?: string;
+    documentId?: string;
 };
 
 export type AiRunResponse = {

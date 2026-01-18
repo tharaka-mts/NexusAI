@@ -1,0 +1,14 @@
+yarn run v1.22.22
+$ tsx watch src/server.ts
+2026-01-17T18:55:46.405Z [32minfo[39m: [32mInitializing AI Provider: GEMINI (gemini-1.5-flash)[39m {
+  "service": "api"
+}
+2026-01-17T18:55:46.449Z [32minfo[39m: [32mServer running on port 4000 in development mode[39m {
+  "service": "api"
+}
+2026-01-17T18:55:46.450Z [32minfo[39m: [32mRedis Client Connected[39m {
+  "service": "api"
+}
+2026-01-17T18:55:46.459Z [32minfo[39m: [32mRedis Client Ready[39m {
+  "service": "api"
+}

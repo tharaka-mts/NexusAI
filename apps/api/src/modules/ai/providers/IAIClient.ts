@@ -1,13 +1,5 @@
-export type AiResult = {
-    summary: string;
-    tasks: string[];
-    usage?: {
-        promptTokens: number;
-        completionTokens: number;
-        totalTokens: number;
-    };
-};
+import { AiOutput } from '../ai.output.schema';
 
 export interface IAIClient {
-    summarizeAndExtract(input: string): Promise<AiResult>;
+    generateSummaryAndTasks(content: string): Promise<AiOutput>;
 }

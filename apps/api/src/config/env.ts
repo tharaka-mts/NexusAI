@@ -15,6 +15,32 @@ const envSchema = z.object({
     JWT_SECRET: z.string().min(1, 'JWT_SECRET is required'),
     JWT_EXPIRES_IN: z.string().default('7d'),
     AUTH_COOKIE_NAME: z.string().default('nexus_auth'),
+
+    // AI Config
+    AI_PROVIDER: z.enum(['GEMINI', 'OLLAMA', 'MOCK']).default('MOCK'),
+    AI_MODEL: z.string().default('gemini-2.0-flash'),
+    GEMINI_API_KEY: z.string().optional(),
+    OLLAMA_BASE_URL: z.string().optional(),
+    AI_TIMEOUT_MS: z.coerce.number().default(30000),
+    AI_PROMPT_VERSION: z.string().default('v1'),
 });
 
-export const env = envSchema.parse(process.env);
+// Refine validation for providers
+const refinedEnv = envSchema.superRefine((data, ctx) => {
+    if (data.AI_PROVIDER === 'GEMINI' && !data.GEMINI_API_KEY) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'GEMINI_API_KEY is required when AI_PROVIDER is GEMINI',
+            path: ['GEMINI_API_KEY'],
+        });
+    }
+    if (data.AI_PROVIDER === 'OLLAMA' && !data.OLLAMA_BASE_URL) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'OLLAMA_BASE_URL is required when AI_PROVIDER is OLLAMA',
+            path: ['OLLAMA_BASE_URL'],
+        });
+    }
+});
+
+export const env = refinedEnv.parse(process.env);

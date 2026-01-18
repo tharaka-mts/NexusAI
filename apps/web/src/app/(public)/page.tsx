@@ -1,9 +1,13 @@
+"use client";
+
 import { Button } from '@/components/ui/Button';
 import TranscriptInput from '@/components/common/TranscriptInput';
 import { Sparkles, Zap, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
+import { useAuthStore } from '@/store/useAuthStore';
 
 const LandingPage = () => {
+    const { isAuthenticated } = useAuthStore();
     return (
         <div className="flex flex-col min-h-screen">
 
@@ -19,7 +23,7 @@ const LandingPage = () => {
                 </p>
 
                 <div className="flex flex-wrap justify-center gap-4 pt-4">
-                    <Link href="/signup">
+                    <Link href={isAuthenticated ? "/dashboard" : "/signup"}>
                         <Button size="lg" className="h-12 px-8 text-lg rounded-full bg-primary hover:bg-primary/90 text-white font-semibold shadow-lg shadow-primary/20">
                             Get Started Free
                         </Button>

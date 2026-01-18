@@ -3,7 +3,6 @@ import { healthRoutes } from './health.routes';
 import { guestRoutes } from '../modules/guests/guest.routes';
 import { authRoutes } from '../modules/auth/auth.routes';
 import { aiRoutes } from '../modules/ai/ai.routes';
-import { env } from '../config/env';
 
 import { documentsRoutes } from '@/modules/documents/documents.routes';
 

@@ -1,73 +1,98 @@
+import { Prisma, AiProvider } from '@prisma/client';
 import { prisma } from '../../config/prisma';
-import { AiResult } from './providers/IAIClient';
 import { CreateAiRunInput } from './ai.types';
+import { AiOutput } from './ai.output.schema';
 
 export const aiRepository = {
-    async createRun(input: CreateAiRunInput, result: AiResult, provider: 'MOCK', cacheKey: string) {
-        return prisma.$transaction(async (tx) => {
-            // 1. Create Document (Content snapshot)
-            const document = await tx.document.create({
-                data: {
-                    content: input.text,
-                    contentHash: cacheKey, // Using cacheKey as hash for simplicity
-                    userId: input.userId,
-                    guestSessionId: input.guestSessionId,
-                    sourceType: 'PLAIN_TEXT',
-                    title: 'AI Run Input',
-                },
-            });
+    async getDocumentById(id: string) {
+        return prisma.document.findUnique({ where: { id } });
+    },
 
-            // 2. Create AI Run
+    async createRun(
+        input: CreateAiRunInput & { guestSessionId?: string },
+        result: AiOutput,
+        provider: string,
+        cacheKey: string
+    ) {
+        return prisma.$transaction(async (tx) => {
+            // 1. Create or Reuse Document
+            let documentId = input.documentId;
+            let documentTitle = input.title || 'AI Run Input';
+
+            // Determine owner (for new docs)
+            const ownerData = input.userId
+                ? { userId: input.userId }
+                : { guestSessionId: input.guestSessionId };
+
+            if (!documentId) {
+                const newDoc = await tx.document.create({
+                    data: {
+                        content: input.text,
+                        contentHash: cacheKey.split(':').pop() || 'hash',
+                        sourceType: 'PLAIN_TEXT',
+                        title: documentTitle,
+                        ...ownerData,
+                    },
+                });
+                documentId = newDoc.id;
+            }
+
+            // 2. Map Provider to Enum
+            let dbProvider: AiProvider = 'GEMINI';
+            if (provider === 'OLLAMA') dbProvider = 'OLLAMA';
+            if (provider === 'GEMINI') dbProvider = 'GEMINI';
+
+            // 3. Create AI Run
             const run = await tx.aiRun.create({
                 data: {
-                    userId: input.userId,
-                    guestSessionId: input.guestSessionId,
-                    documentId: document.id,
-                    provider: 'OLLAMA', // Using OLLAMA enum logic or MOCK if added. Schema has GEMINI, OLLAMA. Mapping MOCK to OLLAMA or adding to schema? schema is fixed. Let's use 'OLLAMA' as placeholder for Mock or 'GEMINI'. I'll use 'GEMINI' as default.
-                    model: 'mock-model',
+                    ...ownerData,
+                    documentId: documentId!,
+                    provider: dbProvider,
+                    model: 'default',
                     status: 'SUCCEEDED',
                     cacheKey: cacheKey,
-                    promptTokens: result.usage?.promptTokens,
-                    completionTokens: result.usage?.completionTokens,
-                    totalTokens: result.usage?.totalTokens,
                     finishedAt: new Date(),
                     startedAt: new Date(),
                 },
             });
 
-            // 3. Create Summary
+            // 4. Create Summary
             const summary = await tx.summary.create({
                 data: {
-                    documentId: document.id,
+                    documentId: documentId!,
                     aiRunId: run.id,
-                    shortSummary: result.summary,
+                    shortSummary: result.shortSummary,
+                    detailedSummary: result.detailedSummary,
+                    highlights: result.highlights,
                 },
             });
 
-            // 4. Create Tasks (ONLY FOR AUTHENTICATED USERS)
-            const tasksOpts = result.tasks.map((t) => ({
-                userId: input.userId!, // only used if input.userId exists
-                documentId: document.id,
-                aiRunId: run.id,
-                title: t,
-                status: 'TODO' as const,
-            }));
-
+            // 5. Create Tasks (ONLY FOR AUTHENTICATED USERS)
             let createdTasks: any[] = [];
-            if (input.userId && tasksOpts.length > 0) {
-                // CreateMany is faster
+            if (input.userId && result.tasks.length > 0) {
+                const tasksData: Prisma.TaskCreateManyInput[] = result.tasks.map((t) => ({
+                    userId: input.userId!,
+                    documentId: documentId,
+                    aiRunId: run.id,
+                    title: t.title,
+                    description: t.description,
+                    priority: t.priority || 'MEDIUM',
+                    status: 'TODO',
+                }));
+
                 await tx.task.createMany({
-                    data: tasksOpts,
+                    data: tasksData,
                 });
-                // Fetch them back to return
+
                 createdTasks = await tx.task.findMany({
                     where: { aiRunId: run.id },
                 });
-            }
-
-            // For guests, we return the task objects but don't save them.
-            if (!input.userId) {
-                createdTasks = result.tasks.map(t => ({ title: t, status: 'TODO' }));
+            } else {
+                // Return un-persisted objects
+                createdTasks = result.tasks.map(t => ({
+                    ...t,
+                    status: 'TODO'
+                }));
             }
 
             return {

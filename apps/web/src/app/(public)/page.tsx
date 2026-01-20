@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from '@/components/ui/Button';
-import TranscriptInput from '@/components/common/TranscriptInput';
+import { RunAiSection } from '@/features/ai/components/RunAiSection';
 import { Sparkles, Zap, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -39,7 +39,7 @@ const LandingPage = () => {
             {/* Input Section (Demo) */}
             <section id="demo" className="w-full px-4 md:px-8 pb-24">
                 <div className="max-w-4xl mx-auto">
-                    <TranscriptInput />
+                    <RunAiSection mode="guest" />
                 </div>
             </section>
 

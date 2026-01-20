@@ -1,4 +1,4 @@
-import TranscriptInput from '@/components/common/TranscriptInput';
+import { RunAiSection } from '@/features/ai/components/RunAiSection';
 import { FileText, CheckSquare, Activity } from 'lucide-react';
 
 const DashboardPage = () => {
@@ -17,7 +17,7 @@ const DashboardPage = () => {
                 {/* Quick Summarize Widget */}
                 <div className="pt-2">
                     <h3 className="text-lg font-semibold mb-4 text-foreground/90">Quick Summarize</h3>
-                    <TranscriptInput />
+                    <RunAiSection mode="auth" />
                 </div>
             </div>
 

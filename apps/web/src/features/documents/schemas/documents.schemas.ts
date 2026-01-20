@@ -13,17 +13,23 @@ export const documentSchema = z.object({
 
 export const summarySchema = z.object({
     id: z.string(),
-    content: z.string(),
+    shortSummary: z.string(),
+    detailedSummary: z.string().nullable().optional(),
+    highlights: z.array(z.string()).optional().default([]),
     createdAt: z.string().or(z.date()),
 });
 
-// Assuming Task shape briefly here (Part B will define it fully, but we need it for Document Detail)
+export const taskStatusSchema = z.enum(['TODO', 'IN_PROGRESS', 'DONE', 'BLOCKED']);
+export const taskPrioritySchema = z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']);
+
 export const taskSchema = z.object({
     id: z.string(),
-    description: z.string(),
-    isCompleted: z.boolean(),
+    title: z.string(),
+    description: z.string().nullable().optional(),
+    status: taskStatusSchema.optional().default('TODO'),
+    priority: taskPrioritySchema.optional().default('MEDIUM'),
+    completedAt: z.string().or(z.date()).nullable().optional(),
     // Add other fields as they become apparent or strict
-    // For now allowing passthrough or keeping it simple
 }).passthrough();
 
 

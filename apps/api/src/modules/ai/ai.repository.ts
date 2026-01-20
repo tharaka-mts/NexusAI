@@ -17,7 +17,7 @@ export const aiRepository = {
         return prisma.$transaction(async (tx) => {
             // 1. Create or Reuse Document
             let documentId = input.documentId;
-            let documentTitle = input.title || 'AI Run Input';
+            let documentTitle = input.title;
 
             // Determine owner (for new docs)
             const ownerData = input.userId
@@ -66,6 +66,20 @@ export const aiRepository = {
                     highlights: result.highlights,
                 },
             });
+
+            // 4.1 Update Document Title with Summary (If not provided by user)
+            if (!input.title) {
+                const summaryText = result.shortSummary || '';
+                const words = summaryText.split(/\s+/).filter(Boolean);
+                const summaryTitle = words.slice(0, 8).join(' ');
+
+                if (summaryTitle) {
+                    await tx.document.update({
+                        where: { id: documentId! },
+                        data: { title: summaryTitle },
+                    });
+                }
+            }
 
             // 5. Create Tasks (ONLY FOR AUTHENTICATED USERS)
             let createdTasks: any[] = [];

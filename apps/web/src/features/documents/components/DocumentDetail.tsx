@@ -80,8 +80,27 @@ export const DocumentDetail = ({ id }: DocumentDetailProps) => {
                         </div>
                         <div className="p-6">
                             {latestSummary ? (
-                                <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground leading-relaxed">
-                                    {latestSummary.content}
+                                <div className="space-y-4">
+                                    <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground leading-relaxed">
+                                        <p className="font-medium text-foreground">Summary</p>
+                                        {latestSummary.shortSummary}
+                                    </div>
+                                    {latestSummary.detailedSummary && (
+                                        <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground leading-relaxed border-t pt-4">
+                                            <p className="font-medium text-foreground">Detailed Analysis</p>
+                                            {latestSummary.detailedSummary}
+                                        </div>
+                                    )}
+                                    {latestSummary.highlights && latestSummary.highlights.length > 0 && (
+                                        <div className="space-y-2 border-t pt-4">
+                                            <p className="text-sm font-medium text-foreground">Key Highlights</p>
+                                            <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
+                                                {latestSummary.highlights.map((h, i) => (
+                                                    <li key={i}>{h}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="flex flex-col items-center justify-center py-8 text-muted-foreground bg-muted/20 rounded-lg border border-dashed">
@@ -116,8 +135,11 @@ export const DocumentDetail = ({ id }: DocumentDetailProps) => {
                                 <ul className="space-y-2">
                                     {tasks.map((task: any) => (
                                         <li key={task.id} className="flex gap-2 text-sm text-foreground">
-                                            <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0 mt-0.5" />
-                                            <span>{task.description}</span>
+                                            <CheckCircle2 className={`h-4 w-4 shrink-0 mt-0.5 ${task.status === 'DONE' ? 'text-green-500' : 'text-muted-foreground'}`} />
+                                            <div className="flex flex-col">
+                                                <span className={task.status === 'DONE' ? 'line-through text-muted-foreground' : ''}>{task.title}</span>
+                                                {task.description && <span className="text-xs text-muted-foreground/70">{task.description}</span>}
+                                            </div>
                                         </li>
                                     ))}
                                 </ul>

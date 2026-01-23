@@ -3,7 +3,7 @@ import { User } from '@prisma/client';
 export type CreateUserInput = {
     username: string;
     email: string;
-    passwordHash: string;
+    passwordHash: string | null;
 };
 
 export type AuthResponse = {

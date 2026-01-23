@@ -7,13 +7,13 @@ import { AppError } from '../../shared/errors/AppError';
 import { z } from 'zod';
 import { loginSchema, registerSchema } from './auth.validators';
 
-const signToken = (user: SafeUser): string => {
+export const signToken = (user: SafeUser): string => {
     return jwt.sign({ id: user.id, email: user.email, role: user.role }, env.JWT_SECRET as jwt.Secret, {
         expiresIn: env.JWT_EXPIRES_IN,
     } as jwt.SignOptions);
 };
 
-const filterUser = (user: any): SafeUser => {
+export const filterUser = (user: any): SafeUser => {
     const { passwordHash, ...safeUser } = user;
     return safeUser;
 };
@@ -59,5 +59,19 @@ export const authService = {
         const token = signToken(safeUser);
 
         return { user: safeUser, token };
+    },
+
+    issueAuthCookie(user: any, res: any) {
+        const safeUser = filterUser(user);
+        const token = signToken(safeUser);
+
+        res.cookie(env.AUTH_COOKIE_NAME, token, {
+            httpOnly: true,
+            secure: env.COOKIE_SECURE,
+            sameSite: 'lax' as const,
+            path: '/',
+        });
+
+        return safeUser;
     },
 };

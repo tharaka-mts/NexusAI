@@ -2,7 +2,18 @@ import { Trash2, CheckCircle, Circle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { safeFormatDate } from "@/lib/date";
 import type { Task } from "../types/tasks.types";
-import { cn } from "@/lib/utils"; // Assuming utils exists
+import { cn } from "@/lib/utils";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface TaskRowProps {
     task: Task;
@@ -72,20 +83,37 @@ export const TaskRow = ({ task, onToggleStatus, onDelete, isUpdating, isDeleting
             </div>
 
             <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-                    onClick={() => {
-                        if (confirm('Are you sure you want to delete this task?')) {
-                            onDelete(task.id);
-                        }
-                    }}
-                    disabled={isDeleting}
-                >
-                    <Trash2 className="h-4 w-4" />
-                    <span className="sr-only">Delete</span>
-                </Button>
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            disabled={isDeleting}
+                        >
+                            <Trash2 className="h-4 w-4" />
+                            <span className="sr-only">Delete</span>
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This action cannot be undone. This will permanently delete your
+                                task.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={() => onDelete(task.id)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                                Delete
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </div>
         </div>
     );

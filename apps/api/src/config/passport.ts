@@ -1,0 +1,17 @@
+import passport from 'passport';
+import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import { env } from './env';
+import { googleStrategyVerify } from '@/modules/auth/google.strategy';
+
+passport.use(
+    new GoogleStrategy(
+        {
+            clientID: env.GOOGLE_CLIENT_ID || '',
+            clientSecret: env.GOOGLE_CLIENT_SECRET || '',
+            callbackURL: env.GOOGLE_CALLBACK_URL,
+        },
+        googleStrategyVerify
+    )
+);
+
+export default passport;

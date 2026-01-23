@@ -23,6 +23,12 @@ const envSchema = z.object({
     OLLAMA_BASE_URL: z.string().optional(),
     AI_TIMEOUT_MS: z.coerce.number().default(30000),
     AI_PROMPT_VERSION: z.string().default('v1'),
+
+    // Google OAuth
+    GOOGLE_CLIENT_ID: z.string().optional(),
+    GOOGLE_CLIENT_SECRET: z.string().optional(),
+    GOOGLE_CALLBACK_URL: z.string().default('http://localhost:4000/auth/google/callback'),
+    FRONTEND_URL: z.string().default('http://localhost:3000'),
 });
 
 // Refine validation for providers

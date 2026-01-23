@@ -11,4 +11,8 @@ router.post('/login', validate(loginSchema), authController.login);
 router.post('/logout', authController.logout);
 router.get('/me', authMiddleware, authController.me);
 
+// Google OAuth
+router.get('/google', authController.googleAuthStart);
+router.get('/google/callback', authController.googleAuthCallback);
+
 export const authRoutes = router;

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { authService } from './auth.service';
 import { env } from '../../config/env';
 import { authRepository } from './auth.repository';
+import passport from '../../config/passport';
 
 // Cookie options
 const getCookieOptions = () => ({
@@ -54,5 +55,22 @@ export const authController = {
         // This will be protected by authMiddleware, so req.user exists
         const user = (req as any).user;
         res.json({ ok: true, data: user });
-    }
+    },
+
+    googleAuthStart: passport.authenticate('google', { scope: ['profile', 'email'] }),
+
+    googleAuthCallback(req: Request, res: Response, next: NextFunction) {
+        passport.authenticate('google', { session: false }, (err: any, user: any) => {
+            if (err || !user) {
+                return res.redirect(`${env.FRONTEND_URL}/signin?error=oauth_failed`);
+            }
+
+            try {
+                authService.issueAuthCookie(user, res);
+                res.redirect(`${env.FRONTEND_URL}/dashboard`);
+            } catch (error) {
+                next(error);
+            }
+        })(req, res, next);
+    },
 };

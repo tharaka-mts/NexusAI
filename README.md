@@ -1,246 +1,219 @@
 # Nexus AI
 
-A production-grade monorepo for AI-powered content summarization and task extraction. Nexus AI enables users to submit documents, generate intelligent summaries, and extract actionable tasks using configurable AI providers.
+Production-ready MVP for meeting transcript summarization and action-item extraction.
 
-## Overview
+Nexus AI turns unstructured meeting text into:
+- concise and detailed summaries
+- extracted, actionable tasks
+- persisted documents/tasks for authenticated users
 
-Nexus AI solves the problem of information overload by automatically analyzing documents and extracting key insights and actionable items. The platform supports both guest access for trial usage and authenticated user accounts for persistent task management.
+Built to demonstrate full-stack engineering depth: modular backend architecture, secure cookie-based auth, provider-agnostic AI integration, caching, and a scalable monorepo structure.
 
-### Key Features
+## Why This Project
 
-- **Guest Mode**: Try the platform with one free AI-powered summary without creating an account
-- **AI-Powered Analysis**: Generate comprehensive summaries and extract actionable tasks from any document
-- **Task Management Dashboard**: Authenticated users can view, organize, and track extracted tasks
-- **Model-Agnostic Architecture**: Abstracted AI provider interface supporting multiple backends (Gemini, Ollama)
-- **Clean MVCS Backend**: Modular architecture following Model-View-Controller-Service patterns
-- **Caching & Rate Limiting**: Optimized performance with intelligent caching and request throttling
-- **Type-Safe Validation**: End-to-end type safety with Zod schemas and TypeScript
+Teams lose execution context in long meetings and scattered notes. Nexus AI reduces that operational drag by converting transcripts into clear summaries and task lists that can be tracked in-app.
+
+## MVP Status
+
+`MVP complete` with end-to-end flow:
+- guest users can run exactly one free AI extraction
+- users can sign up/sign in via email/password or Google OAuth
+- authenticated users can generate, save, browse, and manage extracted work
+- auth state persists correctly across refresh/navigation with httpOnly cookie sessions and `/auth/me` bootstrap
+- auth page guards prevent signed-in users from revisiting `/signin` or `/signup`
+
+## Core Features
+
+- **AI summarization + extraction**
+  - Short summary, detailed summary, highlights, and tasks.
+- **Guest mode with hard usage gating**
+  - Exactly one free run enforced server-side.
+- **Secure auth**
+  - JWT in httpOnly cookies, Google OAuth, email/password registration.
+- **Task management dashboard**
+  - View and manage extracted tasks/documents.
+- **Model-agnostic AI providers**
+  - Swappable provider interface (`Gemini`, `Ollama`, `Mock`).
+- **Caching + performance controls**
+  - Redis-backed caching, rate limiting, validation, centralized error handling.
 
 ## Tech Stack
 
-### Frontend
-- **Framework**: Next.js 16 (App Router)
-- **UI Library**: React 19
-- **Styling**: Tailwind CSS 4
-- **State Management**: Zustand
-- **Data Fetching**: TanStack Query (React Query)
-- **Form Handling**: React Hook Form + Zod validation
-- **UI Components**: Radix UI primitives, Lucide icons
+### Frontend (`apps/web`)
+- Next.js 16 (App Router), React 19, TypeScript
+- Tailwind CSS 4 + Radix/shadcn-style UI primitives
+- Zustand (client auth state)
+- TanStack Query (server state)
+- React Hook Form + Zod (form + runtime validation)
+- Sonner (notifications)
 
-### Backend
-- **Runtime**: Node.js with Express
-- **Language**: TypeScript
-- **Database ORM**: Prisma
-- **Validation**: Zod
-- **Security**: Helmet, CORS, cookie-parser
-- **Logging**: Winston + Morgan
-- **Rate Limiting**: express-rate-limit
+### Backend (`apps/api`)
+- Express + TypeScript
+- Prisma + PostgreSQL
+- Redis
+- Passport (Google OAuth)
+- Argon2 + JWT
+- Helmet, CORS, cookie-parser, express-rate-limit
+- Winston + Morgan logging
 
-### Database & Caching
-- **Primary Database**: PostgreSQL
-- **ORM**: Prisma with migration support
-- **Session Management**: Cookie-based guest tracking
+### Workspace
+- Yarn workspaces monorepo (`apps/*`, `packages/*`)
 
-### AI Providers
-- Google Gemini
-- Ollama (local models)
+## Architecture
 
-## Architecture Overview
+### Backend pattern
+Feature-module MVCS style:
+- Routes -> Controllers -> Services -> Repositories
+- Shared middlewares (auth, validation, guest-session, error)
+- Config layer for env, logging, Redis, Prisma, Passport
 
-Nexus AI is structured as a Yarn workspaces monorepo with clear separation of concerns:
+Main modules:
+- `auth`
+- `ai`
+- `documents`
+- `tasks`
+- `guests`
 
-```
-nexus-ai-monorepo/
-├── apps/
-│   ├── api/          # Express backend (MVCS architecture)
-│   └── web/          # Next.js frontend (App Router)
-├── packages/
-│   └── shared/       # Shared types and utilities
-└── prisma/           # Database schema and migrations
-```
+### Frontend pattern
+Feature-first organization with clear boundaries:
+- `features/auth` (auth provider, store, api, auth components, types)
+- `features/ai` (AI run flow + transcript input)
+- `features/documents`
+- `features/tasks`
+- `features/layout` (navigation/layout components)
+- `components/ui` (reusable UI primitives)
 
-### Frontend Architecture
-The Next.js application uses the App Router pattern with a feature-based organization. Components are organized into reusable UI primitives and feature-specific modules.
+This keeps domain logic close to each feature while preserving reusable primitives.
 
-### Backend Architecture
-The Express API follows a modular MVCS (Model-View-Controller-Service) pattern:
-- **Models**: Prisma schema definitions for database entities
-- **Controllers**: HTTP request handlers and response formatting
-- **Services**: Business logic and AI provider orchestration
-- **Modules**: Feature-based organization (auth, documents, tasks, ai, guests, health)
+## Security + Auth Design
 
-### Guest Access Flow
-1. First-time visitors receive a unique `guestId` cookie
-2. Guest sessions are tracked in the `GuestSession` table
-3. One free AI run is permitted per guest session
-4. Guest results are returned but tasks are not persisted
-5. Users must authenticate to save and manage tasks
+- Authentication token is stored in **httpOnly cookie** (not localStorage token auth).
+- Frontend uses `credentials: include` for secure cookie-based session calls.
+- Auth bootstrap flow calls `/auth/me` during app initialization.
+- Route guards enforce:
+  - protected dashboard routes require authentication
+  - authenticated users are redirected away from `/signin` and `/signup`
 
-### AI Request Flow
-1. Document submitted via frontend
-2. Backend validates request and checks guest/user limits
-3. Content hash computed to check for cached results
-4. AI provider abstraction layer routes request to configured provider
-5. Summary and tasks extracted from AI response
-6. Results cached and returned to client
-7. For authenticated users, tasks are persisted to database
+## AI Request Flow
+
+1. User/guest submits transcript text.
+2. API validates payload and checks auth/guest usage limits.
+3. Content hash + cache key are derived.
+4. Redis cache is checked.
+5. On miss, provider executes (`Gemini`/`Ollama`/`Mock`).
+6. Response is normalized into summaries/tasks.
+7. Authenticated runs persist document/task data.
+8. Guest receives result but is constrained by one-run policy.
 
 ## Repository Structure
 
+```text
+.
+├── apps
+│   ├── api
+│   │   ├── prisma
+│   │   └── src
+│   │       ├── config
+│   │       ├── middlewares
+│   │       ├── modules
+│   │       └── routes
+│   └── web
+│       └── src
+│           ├── app
+│           ├── components/ui
+│           ├── features
+│           │   ├── ai
+│           │   ├── auth
+│           │   ├── documents
+│           │   ├── layout
+│           │   └── tasks
+│           └── lib
+├── packages
+│   └── shared
+└── README.md
 ```
-apps/
-├── api/
-│   ├── prisma/
-│   │   ├── schema.prisma       # Database schema
-│   │   └── migrations/         # Migration history
-│   └── src/
-│       ├── config/             # Environment and logger config
-│       ├── middlewares/        # Express middlewares
-│       ├── modules/            # Feature modules (auth, ai, tasks, etc.)
-│       ├── app.ts              # Express app configuration
-│       └── server.ts           # Server entry point
-└── web/
-    └── src/
-        ├── app/                # Next.js App Router pages
-        ├── components/         # Reusable UI components
-        ├── features/           # Feature-specific modules
-        └── lib/                # Utilities and configurations
 
-packages/
-└── shared/                     # Shared types and utilities
-```
-
-## Running the Project Locally
+## Local Setup
 
 ### Prerequisites
 - Node.js 20+
-- PostgreSQL database
-- Yarn package manager
+- Yarn 1.x
+- PostgreSQL
+- Redis
 
-### Installation
+### 1) Install dependencies
 
-1. Clone the repository and install dependencies:
 ```bash
 yarn install
 ```
 
-2. Configure environment variables:
+### 2) Configure environment variables
 
-**Backend** (`apps/api/.env`):
 ```bash
 cp apps/api/.env.example apps/api/.env
-# Edit apps/api/.env with your database credentials and settings
-```
-
-Required variables:
-- `PORT`: API server port (default: 4000)
-- `NODE_ENV`: Environment (development/production)
-- `DATABASE_URL`: PostgreSQL connection string
-- `CORS_ORIGIN`: Frontend URL for CORS
-
-**Frontend** (`apps/web/.env`):
-```bash
 cp apps/web/.env.example apps/web/.env
-# Edit apps/web/.env with your API URL
 ```
 
-Required variables:
-- `NEXT_PUBLIC_API_BASE_URL`: Backend API URL (default: http://localhost:4000)
-- `NEXT_PUBLIC_APP_NAME`: Application name
+Set required values in `apps/api/.env`:
+- `DATABASE_URL`
+- `JWT_SECRET`
+- `GEMINI_API_KEY` (if `AI_PROVIDER=GEMINI`)
+- `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` (for OAuth)
 
-3. Set up the database:
+### 3) Run database migration
+
 ```bash
 cd apps/api
 yarn prisma:migrate
+cd ../..
 ```
 
-4. Start both applications:
+### 4) Start both apps
+
 ```bash
-# From repository root
 yarn dev
 ```
 
-This runs both the frontend and backend concurrently.
+App endpoints:
+- Frontend: `http://localhost:3000`
+- API: `http://localhost:4000`
+- Health: `http://localhost:4000/health`
 
-Alternatively, start them separately:
-```bash
-# Terminal 1 - Backend
-cd apps/api
-yarn dev
+## Scripts
 
-# Terminal 2 - Frontend
-cd apps/web
-yarn dev
-```
+From repo root:
+- `yarn dev` - run web + api concurrently
+- `yarn build` - build all workspaces
+- `yarn lint` - lint all workspaces
+- `yarn typecheck` - type-check all workspaces
 
-### Access Points
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:4000
-- **API Health Check**: http://localhost:4000/health
+API workspace (`apps/api`):
+- `yarn dev`
+- `yarn prisma:migrate`
+- `yarn prisma:studio`
 
-## Health Check
+Web workspace (`apps/web`):
+- `yarn dev`
+- `yarn build`
+- `yarn start`
 
-Verify the backend is running correctly:
+## Engineering Highlights (Recruiter Quick Scan)
 
-```bash
-curl http://localhost:4000/health
-```
+- Designed and implemented a full-stack SaaS MVP with modular architecture.
+- Applied secure cookie-based authentication and route-level access control.
+- Implemented provider-agnostic AI integration for future model flexibility.
+- Built guest-usage gating with backend enforcement logic.
+- Structured frontend into feature-driven domains with reusable UI primitives.
+- Added resilient validation and error boundaries across client/server.
 
-Expected response:
-```json
-{
-  "status": "ok",
-  "timestamp": "2026-01-09T06:32:53.000Z",
-  "env": "development"
-}
-```
+## Future Evolution
 
-Verify the frontend is accessible by navigating to http://localhost:3000 in your browser.
+- Async job queue for long-running AI processing
+- Background retries and dead-letter handling
+- Team workspaces and RBAC
+- Third-party task sync (Jira/Notion/Linear)
+- Observability stack (metrics/tracing/alerts)
 
-## Environment Variables
+---
 
-### Backend (`apps/api/.env.example`)
-Reference the example file for all required backend configuration:
-- Database connection
-- Server port and environment
-- CORS settings
-
-### Frontend (`apps/web/.env.example`)
-Reference the example file for all required frontend configuration:
-- API base URL
-- Application metadata
-
-**Important**: Never commit actual `.env` files. Use `.env.example` as a template.
-
-## Development Notes
-
-### Guest Limit Enforcement
-- Guest sessions are tracked server-side using secure cookies
-- The `freeRunUsedAt` timestamp in `GuestSession` enforces the one-free-run limit
-- Subsequent guest requests are rejected until the user authenticates
-
-### Task Persistence
-- Tasks extracted from AI runs are only persisted for authenticated users
-- Guest users receive task data in the API response but it is not saved to the database
-- The `Task` model requires a `userId`, preventing guest task persistence at the schema level
-
-### AI Provider Abstraction
-- AI providers are abstracted behind a common interface
-- Provider selection is configurable per request
-- Easy to add new providers by implementing the interface
-- Supports caching based on content hash to reduce redundant API calls
-
-### Database Schema
-- Prisma schema supports both user-owned and guest-owned documents
-- Content hashing enables deduplication and caching
-- Comprehensive indexing for performance optimization
-- Soft deletion patterns with `onDelete: SetNull` for data preservation
-
-## Future Improvements
-
-- **Background Job Processing**: Queue AI runs for better scalability and user experience
-- **Team Collaboration**: Shared workspaces and task assignment
-- **Export & Integrations**: Export tasks to external tools (Jira, Asana, Notion)
-- **Advanced AI Features**: Multi-document analysis, custom extraction templates
-- **Real-time Updates**: WebSocket support for live task updates
-- **Analytics Dashboard**: Usage metrics and AI performance tracking
+Nexus AI is engineered as a practical product to make day-to-day meeting follow-up easier through reliable summarization, actionable extraction, and secure task workflows.

@@ -4,9 +4,10 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import TranscriptInput from '@/components/common/TranscriptInput';
+import TranscriptInput from './TranscriptInput';
 import { useAiRun } from '../hooks/useAiRun';
 import { RunAiResponse } from '../schemas/ai.schemas';
+import { ApiError } from '@/lib/apiClient';
 
 interface RunAiSectionProps {
     mode: 'guest' | 'auth';
@@ -40,9 +41,14 @@ export const RunAiSection = ({ mode }: RunAiSectionProps) => {
                     toast.success('Summary generated successfully!');
                 }
             },
-            onError: (error: any) => {
+            onError: (error: unknown) => {
+                const apiError = error instanceof ApiError ? error : null;
                 // Check if it's a limit reached error
-                if (error?.code === 'LIMIT_REACHED' || error?.status === 403 || error?.status === 401) {
+                if (
+                    apiError?.code === 'LIMIT_REACHED' ||
+                    apiError?.status === 403 ||
+                    apiError?.status === 401
+                ) {
                     toast.error("You reached the free limit. Please sign in to continue.", {
                         action: {
                             label: 'Sign Up',
@@ -50,7 +56,7 @@ export const RunAiSection = ({ mode }: RunAiSectionProps) => {
                         }
                     });
                 } else {
-                    toast.error(error?.message || 'Something went wrong. Please try again.');
+                    toast.error(apiError?.message || 'Something went wrong. Please try again.');
                 }
             }
         });

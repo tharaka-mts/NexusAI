@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { RunAiSection } from '@/features/ai/components/RunAiSection';
 import { Sparkles, Zap, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
-import { useAuthStore } from '@/store/useAuthStore';
+import { useAuthStore } from '@/features/auth/store/useAuthStore';
 
 const LandingPage = () => {
     const { isAuthenticated } = useAuthStore();

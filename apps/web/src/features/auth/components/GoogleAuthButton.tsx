@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from '@/components/ui/Button';
-import { notify } from '@/lib/notify';
 
 // Minimal SVG for Google Logo
 const GoogleIcon = () => (

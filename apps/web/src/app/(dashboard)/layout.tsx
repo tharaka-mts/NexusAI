@@ -2,8 +2,8 @@
 
 import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { useAuthStore } from '@/store/useAuthStore';
-import NavBar from '@/components/ui/NavBar';
+import { useAuthStore } from '@/features/auth/store/useAuthStore';
+import { NavBar } from '@/features/layout/components';
 import Link from 'next/link';
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {

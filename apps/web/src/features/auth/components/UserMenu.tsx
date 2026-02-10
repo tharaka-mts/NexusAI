@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { LogOut, User as UserIcon, LayoutDashboard } from 'lucide-react';
-import { useAuthStore } from '@/store/useAuthStore';
+import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import { Button } from '@/components/ui/Button';
 import {
     DropdownMenu,

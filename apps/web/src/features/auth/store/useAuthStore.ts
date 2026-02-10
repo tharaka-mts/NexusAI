@@ -1,20 +1,14 @@
 import { create } from 'zustand';
-import { apiFetch } from '@/lib/apiClient';
-
-interface User {
-    id: string;
-    email: string;
-    username?: string;
-    googleId?: string;
-}
+import { logout as logoutRequest } from '../api/auth.api';
+import { AuthUser } from '../types/auth.types';
 
 interface AuthState {
-    user: User | null;
+    user: AuthUser | null;
     isAuthenticated: boolean;
     isInitialized: boolean;
     isLoading: boolean;
 
-    setUser: (user: User | null) => void;
+    setUser: (user: AuthUser | null) => void;
     logout: () => Promise<void>;
 }
 
@@ -34,7 +28,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     logout: async () => {
         set({ isLoading: true });
         try {
-            await apiFetch('/auth/logout', { method: 'POST' });
+            await logoutRequest();
         } catch (error) {
             console.error('Logout failed', error);
         } finally {

@@ -1,4 +1,4 @@
-import NavBar from '@/components/ui/NavBar';
+import { NavBar } from '@/features/layout/components';
 
 const PublicLayout = ({ children }: { children: React.ReactNode }) => {
     return (

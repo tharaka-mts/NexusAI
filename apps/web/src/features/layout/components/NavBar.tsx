@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useAuthStore } from '@/store/useAuthStore';
-import { Button } from './Button';
-import UserMenu from '@/components/common/UserMenu';
+import { useAuthStore } from '@/features/auth/store/useAuthStore';
+import { Button } from '@/components/ui/Button';
+import { UserMenu } from '@/features/auth/components';
 
 const NavBar = () => {
     const pathname = usePathname();

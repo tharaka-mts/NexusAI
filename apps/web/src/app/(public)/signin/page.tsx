@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -9,20 +10,12 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import AuthCard from '@/components/common/AuthCard';
-import GoogleAuthButton from '@/components/common/GoogleAuthButton';
 import { useRouter } from 'next/navigation';
-import { apiFetch } from '@/lib/apiClient';
-import { useAuthStore } from '@/store/useAuthStore';
+import { ApiError } from '@/lib/apiClient';
+import { AuthCard, GoogleAuthButton } from '@/features/auth/components';
+import { useAuthStore } from '@/features/auth/store/useAuthStore';
+import { login } from '@/features/auth/api/auth.api';
 import { notify } from '@/lib/notify';
-
-// Define User type locally or import it if shared (mocking for now to match store)
-interface User {
-    id: string;
-    email: string;
-    username?: string;
-    googleId?: string;
-}
 
 const signInSchema = z.object({
     email: z.string().email('Please enter a valid email address'),
@@ -32,7 +25,7 @@ const signInSchema = z.object({
 type SignInValues = z.infer<typeof signInSchema>;
 
 const SignInPage = () => {
-    const { setUser } = useAuthStore();
+    const { setUser, isAuthenticated, isInitialized } = useAuthStore();
     const router = useRouter();
     const {
         register,
@@ -44,20 +37,27 @@ const SignInPage = () => {
 
     const onSubmit = async (data: SignInValues) => {
         try {
-            const response = await apiFetch<{ data: User }>('/auth/login', {
-                method: 'POST',
-                body: JSON.stringify(data),
-            });
+            const response = await login(data);
             setUser(response.data);
             notify.success('Welcome back!');
             router.push('/dashboard');
-        } catch (error: any) {
-            notify.error(error.message || 'Failed to sign in');
+        } catch (error: unknown) {
+            notify.error(error instanceof ApiError ? error.message : 'Failed to sign in');
         }
     };
 
     const onError = () => {
         notify.error('Please fix the highlighted fields');
+    }
+
+    useEffect(() => {
+        if (isInitialized && isAuthenticated) {
+            router.replace('/dashboard');
+        }
+    }, [isInitialized, isAuthenticated, router]);
+
+    if (isInitialized && isAuthenticated) {
+        return null;
     }
 
     return (

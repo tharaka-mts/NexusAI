@@ -1,61 +1,57 @@
 "use client";
 
 import { useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { useAuthStore } from '@/store/useAuthStore';
-import { apiFetch } from '@/lib/apiClient';
-
-interface User {
-    id: string;
-    email: string;
-    username?: string;
-    googleId?: string;
-}
+import { useAuthStore } from './store/useAuthStore';
+import { getCurrentUser } from './api/auth.api';
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const pathname = usePathname();
+    const router = useRouter();
     const { setUser, isInitialized, isAuthenticated } = useAuthStore();
 
-    // Define protected routes that require auth checking
+    const isAuthPage = pathname === '/signin' || pathname === '/signup';
     const isProtected =
         pathname?.startsWith('/dashboard') ||
         pathname?.startsWith('/tasks') ||
         pathname?.startsWith('/documents');
 
-    const { data, isError } = useQuery({
+    const { data, isSuccess, isError } = useQuery({
         queryKey: ['auth', 'me'],
-        queryFn: () => apiFetch<{ data: User }>('/auth/me'),
+        queryFn: getCurrentUser,
         retry: false,
         refetchOnWindowFocus: false,
-        staleTime: Infinity,
-        // Only fetch if accessing protected route AND we aren't already known to be authenticated
-        enabled: isProtected && !isAuthenticated,
+        staleTime: 5 * 60 * 1000,
+        enabled: !isInitialized,
     });
 
     useEffect(() => {
-        // Case 1: Public Route
-        if (!isProtected) {
-            // If we land on a public route and haven't initialized, 
-            // set user to null to stop the "Loading..." state.
-            // We preserve existing user state if they navigated here from a protected route.
-            if (!isInitialized) {
-                setUser(null);
-            }
+        if (isInitialized) {
             return;
         }
 
-        // Case 2: Protected Route Query Success
-        if (data?.data) {
-            setUser(data.data);
-        }
-
-        // Case 3: Protected Route Query Error (401/Network)
-        else if (isError) {
-            // Query failed, so we are not authenticated.
+        if (isSuccess) {
+            setUser(data?.data ?? null);
+        } else if (isError) {
             setUser(null);
         }
-    }, [isProtected, isInitialized, data, isError, setUser]);
+    }, [isInitialized, isSuccess, isError, data, setUser]);
+
+    useEffect(() => {
+        if (!isInitialized) {
+            return;
+        }
+
+        if (isProtected && !isAuthenticated) {
+            router.replace('/signin');
+            return;
+        }
+
+        if (isAuthPage && isAuthenticated) {
+            router.replace('/dashboard');
+        }
+    }, [isInitialized, isProtected, isAuthPage, isAuthenticated, router]);
 
     return <>{children}</>;
 };

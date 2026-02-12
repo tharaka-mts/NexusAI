@@ -50,6 +50,15 @@ export const documentsListResponseSchema = z.object({
     data: z.array(documentListItemSchema),
 });
 
+export const documentStatsSchema = z.object({
+    total: z.number(),
+});
+
+export const documentsStatsResponseSchema = z.object({
+    ok: z.boolean(),
+    data: documentStatsSchema,
+});
+
 
 // GET /documents/:id (Detail)
 // Returns { ok: true, data: { document: ..., latestSummary: ..., tasks: ... } }

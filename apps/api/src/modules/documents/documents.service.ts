@@ -17,6 +17,11 @@ export const documentsService = {
         return documentsRepository.listByUser(userId);
     },
 
+    async getStats(userId: string) {
+        const total = await documentsRepository.countByUser(userId);
+        return { total };
+    },
+
     async getDocument(id: string, userId: string) {
         const doc = await documentsRepository.findByIdAndUser(id, userId);
 

@@ -1,9 +1,10 @@
 import { apiFetch } from '@/lib/apiClient';
 import {
     documentsListResponseSchema,
-    documentDetailResponseSchema
+    documentDetailResponseSchema,
+    documentsStatsResponseSchema
 } from '../schemas/documents.schemas';
-import type { DocumentListItem, DocumentDetail } from '../types/documents.types';
+import type { DocumentListItem, DocumentDetail, DocumentStats } from '../types/documents.types';
 
 export const fetchDocuments = async (): Promise<DocumentListItem[]> => {
     const response = await apiFetch<unknown>('/documents');
@@ -27,6 +28,18 @@ export const fetchDocument = async (id: string): Promise<DocumentDetail> => {
 
     if (!result.success) {
         console.error('Document Detail API Validation Error:', result.error);
+        throw new Error('Invalid response from server');
+    }
+
+    return result.data.data;
+};
+
+export const fetchDocumentStats = async (): Promise<DocumentStats> => {
+    const response = await apiFetch<unknown>('/documents/stats');
+
+    const result = documentsStatsResponseSchema.safeParse(response);
+    if (!result.success) {
+        console.error('Document Stats API Validation Error:', result.error);
         throw new Error('Invalid response from server');
     }
 

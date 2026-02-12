@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { Plus, FileText, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { DocumentCard } from "./DocumentCard";
 import { useDocuments } from "../hooks/useDocuments";
+import { RunAiSection } from "@/features/ai/components/RunAiSection";
 
 export const DocumentsList = () => {
+    const [showComposer, setShowComposer] = useState(false);
     const { data: documents, isLoading, isError, error } = useDocuments();
 
     if (isLoading) {
@@ -42,11 +45,24 @@ export const DocumentsList = () => {
                         Manage and view your saved documents.
                     </p>
                 </div>
-                <Button className="shadow-lg shadow-primary/20 transition-all hover:shadow-primary/30">
+                <Button
+                    className="shadow-lg shadow-primary/20 transition-all hover:shadow-primary/30"
+                    onClick={() => setShowComposer((prev) => !prev)}
+                >
                     <Plus className="mr-2 h-4 w-4" />
-                    New Document
+                    {showComposer ? "Close Composer" : "New Document"}
                 </Button>
             </div>
+
+            {showComposer && (
+                <section className="rounded-xl border border-border/50 bg-card p-6">
+                    <h2 className="text-lg font-semibold mb-2">Create and Analyze Document</h2>
+                    <p className="text-sm text-muted-foreground mb-4">
+                        Paste text below to generate summary and tasks. Your document will be saved automatically.
+                    </p>
+                    <RunAiSection mode="auth" />
+                </section>
+            )}
 
             {!documents || documents.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-muted-foreground/25 bg-muted/50 p-12 text-center">
@@ -57,7 +73,11 @@ export const DocumentsList = () => {
                     <p className="mt-2 text-sm text-muted-foreground">
                         Get started by creating your first document to summarize.
                     </p>
-                    <Button className="mt-8" variant="outline">
+                    <Button
+                        className="mt-8"
+                        variant="outline"
+                        onClick={() => setShowComposer(true)}
+                    >
                         Create Document
                     </Button>
                 </div>

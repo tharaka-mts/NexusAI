@@ -5,7 +5,7 @@ import { useTasks } from "@/features/tasks/hooks/useTasks";
 import { TaskList } from "@/features/tasks/components/TaskList";
 import { TasksToolbar } from "@/features/tasks/components/TasksToolbar";
 import { Button } from "@/components/ui/Button";
-import { CheckSquare, ChevronLeft, ChevronRight, AlertCircle, Loader2 } from "lucide-react";
+import { CheckSquare, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react";
 import { TaskStatus, TaskPriority } from "@/features/tasks/types/tasks.types";
 
 const TasksPage = () => {

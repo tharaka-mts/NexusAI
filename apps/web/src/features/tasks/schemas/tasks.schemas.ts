@@ -46,10 +46,22 @@ export const tasksListResponseSchema = z.object({
     totalPages: z.number(),
 });
 
+export const taskStatsSchema = z.object({
+    total: z.number(),
+    completed: z.number(),
+    open: z.number(),
+});
+
+export const taskStatsResponseSchema = z.object({
+    ok: z.boolean(),
+    data: taskStatsSchema,
+});
+
 export const updateTaskSchema = z.object({
     title: z.string().optional(),
     description: z.string().optional(),
     status: taskStatusSchema.optional(),
     priority: taskPrioritySchema.optional(),
+    dueDate: z.string().nullable().optional(),
     completedAt: z.string().nullable().optional(), // To mark done
 });

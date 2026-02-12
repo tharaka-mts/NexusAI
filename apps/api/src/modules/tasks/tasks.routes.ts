@@ -15,6 +15,11 @@ router.get(
     tasksController.list
 );
 
+router.get(
+    '/stats',
+    tasksController.stats
+);
+
 router.patch(
     '/:id',
     validate(updateTaskSchema),

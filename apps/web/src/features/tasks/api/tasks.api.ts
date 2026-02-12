@@ -1,13 +1,15 @@
 import { apiFetch } from '@/lib/apiClient';
 import {
     tasksListResponseSchema,
-    taskSchema
+    taskSchema,
+    taskStatsResponseSchema
 } from '../schemas/tasks.schemas';
 import type {
     TasksListResponse,
     TasksListParams,
     UpdateTaskInput,
-    Task
+    Task,
+    TaskStats
 } from '../types/tasks.types';
 
 export const fetchTasks = async (params: TasksListParams): Promise<TasksListResponse> => {
@@ -47,4 +49,16 @@ export const deleteTask = async (id: string): Promise<void> => {
     await apiFetch(`/tasks/${id}`, {
         method: 'DELETE',
     });
+};
+
+export const fetchTaskStats = async (): Promise<TaskStats> => {
+    const response = await apiFetch<unknown>('/tasks/stats');
+
+    const result = taskStatsResponseSchema.safeParse(response);
+    if (!result.success) {
+        console.error('Task Stats Validation Error:', result.error);
+        throw new Error('Invalid response from server');
+    }
+
+    return result.data.data;
 };

@@ -27,6 +27,20 @@ export const tasksController = {
         }
     },
 
+    async stats(req: Request, res: Response, next: NextFunction) {
+        try {
+            const userId = req.user!.id;
+            const stats = await tasksService.getStats(userId);
+
+            res.json({
+                ok: true,
+                data: stats,
+            });
+        } catch (error) {
+            next(error);
+        }
+    },
+
     async update(req: Request, res: Response, next: NextFunction) {
         try {
             const userId = req.user!.id;

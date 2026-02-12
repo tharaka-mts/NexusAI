@@ -1,4 +1,4 @@
-import { Trash2, CheckCircle, Circle, AlertCircle } from "lucide-react";
+import { Trash2, CheckCircle, Circle, AlertCircle, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { safeFormatDate } from "@/lib/date";
 import type { Task } from "../types/tasks.types";
@@ -18,12 +18,13 @@ import {
 interface TaskRowProps {
     task: Task;
     onToggleStatus: (task: Task) => void;
+    onEdit: (task: Task) => void;
     onDelete: (id: string) => void;
     isUpdating?: boolean;
     isDeleting?: boolean;
 }
 
-export const TaskRow = ({ task, onToggleStatus, onDelete, isUpdating, isDeleting }: TaskRowProps) => {
+export const TaskRow = ({ task, onToggleStatus, onEdit, onDelete, isUpdating, isDeleting }: TaskRowProps) => {
     const isCompleted = task.status === 'DONE';
 
     return (
@@ -83,6 +84,16 @@ export const TaskRow = ({ task, onToggleStatus, onDelete, isUpdating, isDeleting
             </div>
 
             <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => onEdit(task)}
+                    disabled={isUpdating || isDeleting}
+                >
+                    <Pencil className="h-4 w-4" />
+                    <span className="sr-only">Edit</span>
+                </Button>
                 <AlertDialog>
                     <AlertDialogTrigger asChild>
                         <Button

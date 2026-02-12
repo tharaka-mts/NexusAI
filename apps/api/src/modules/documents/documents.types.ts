@@ -12,3 +12,7 @@ export type DocumentWithDetails = Document & {
 };
 
 export type DocumentListItem = Pick<Document, 'id' | 'title' | 'createdAt' | 'updatedAt'>;
+
+export type DocumentStats = {
+    total: number;
+};

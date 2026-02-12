@@ -33,7 +33,9 @@ export const RunAiSection = ({ mode }: RunAiSectionProps) => {
                     // Auth flow: Redirect
                     toast.success('Document created. Opening details...');
                     queryClient.invalidateQueries({ queryKey: ['documents'] });
+                    queryClient.invalidateQueries({ queryKey: ['documents', 'stats'] });
                     queryClient.invalidateQueries({ queryKey: ['tasks'] });
+                    queryClient.invalidateQueries({ queryKey: ['tasks', 'stats'] });
                     router.push(`/documents/${data.data.run.documentId}`);
                 } else {
                     // Guest flow: Show preview
@@ -103,6 +105,11 @@ export const RunAiSection = ({ mode }: RunAiSectionProps) => {
             onChange={setText}
             onGenerate={handleGenerate}
             isLoading={isPending}
+            helperText={
+                mode === 'guest'
+                    ? 'Guest Access: 1 Free Run • No credit card required'
+                    : undefined
+            }
         />
     );
 };

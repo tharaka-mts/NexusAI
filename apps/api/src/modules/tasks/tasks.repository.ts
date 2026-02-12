@@ -1,5 +1,6 @@
 import { prisma } from '@/config/prisma';
 import { UpdateTaskInput, TaskFilters } from './tasks.types';
+import { TaskStatus } from '@prisma/client';
 
 export const tasksRepository = {
     async findMany(userId: string, filters: TaskFilters) {
@@ -25,8 +26,8 @@ export const tasksRepository = {
     },
 
     async findById(id: string, userId: string) {
-        return prisma.task.findUnique({
-            where: { id },
+        return prisma.task.findFirst({
+            where: { id, userId },
         });
     },
 
@@ -41,5 +42,22 @@ export const tasksRepository = {
         return prisma.task.delete({
             where: { id },
         });
+    },
+
+    async statsByUser(userId: string) {
+        const [total, completed] = await Promise.all([
+            prisma.task.count({
+                where: { userId },
+            }),
+            prisma.task.count({
+                where: { userId, status: TaskStatus.DONE },
+            }),
+        ]);
+
+        return {
+            total,
+            completed,
+            open: total - completed,
+        };
     },
 };

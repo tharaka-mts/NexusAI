@@ -3,13 +3,15 @@ import {
     taskSchema,
     tasksListResponseSchema,
     tasksListParamsSchema,
-    updateTaskSchema
+    updateTaskSchema,
+    taskStatsSchema
 } from '../schemas/tasks.schemas';
 
 export type Task = z.infer<typeof taskSchema>;
 export type TasksListResponse = z.infer<typeof tasksListResponseSchema>;
 export type TasksListParams = z.infer<typeof tasksListParamsSchema>;
 export type UpdateTaskInput = z.infer<typeof updateTaskSchema>;
+export type TaskStats = z.infer<typeof taskStatsSchema>;
 
 // Enums (Standardized for UI)
 export enum TaskStatus {

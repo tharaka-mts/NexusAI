@@ -21,6 +21,12 @@ router.get(
 );
 
 router.get(
+    '/stats',
+    authMiddleware,
+    documentsController.stats
+);
+
+router.get(
     '/:id',
     authMiddleware,
     validate(getDocumentSchema),

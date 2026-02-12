@@ -1,7 +1,16 @@
+"use client";
+
 import { RunAiSection } from '@/features/ai/components/RunAiSection';
-import { FileText, CheckSquare, Activity } from 'lucide-react';
+import { FileText, CheckSquare, CheckCircle2, Loader2 } from 'lucide-react';
+import { useDocumentStats } from '@/features/documents/hooks/useDocumentStats';
+import { useTaskStats } from '@/features/tasks/hooks/useTaskStats';
 
 const DashboardPage = () => {
+    const { data: documentStats, isLoading: isDocumentsLoading } = useDocumentStats();
+    const { data: taskStats, isLoading: isTasksLoading } = useTaskStats();
+
+    const isStatsLoading = isDocumentsLoading || isTasksLoading;
+
     return (
         <div className="space-y-10 max-w-6xl mx-auto">
 
@@ -30,7 +39,9 @@ const DashboardPage = () => {
                         </div>
                         <div>
                             <p className="text-sm font-medium text-muted-foreground">Documents</p>
-                            <p className="text-2xl font-bold">0</p>
+                            <p className="text-2xl font-bold">
+                                {isStatsLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : documentStats?.total ?? 0}
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -42,7 +53,9 @@ const DashboardPage = () => {
                         </div>
                         <div>
                             <p className="text-sm font-medium text-muted-foreground">Open Tasks</p>
-                            <p className="text-2xl font-bold">0</p>
+                            <p className="text-2xl font-bold">
+                                {isStatsLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : taskStats?.open ?? 0}
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -50,11 +63,13 @@ const DashboardPage = () => {
                 <div className="glass-card p-6 rounded-xl border border-border/50">
                     <div className="flex items-center gap-4">
                         <div className="p-3 rounded-lg bg-purple-500/10 text-purple-500">
-                            <Activity className="h-6 w-6" />
+                            <CheckCircle2 className="h-6 w-6" />
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-muted-foreground">Usage</p>
-                            <p className="text-2xl font-bold">0/1</p>
+                            <p className="text-sm font-medium text-muted-foreground">Completed Tasks</p>
+                            <p className="text-2xl font-bold">
+                                {isStatsLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : taskStats?.completed ?? 0}
+                            </p>
                         </div>
                     </div>
                 </div>

@@ -28,9 +28,15 @@ export const documentsRepository = {
         });
     },
 
+    async countByUser(userId: string) {
+        return prisma.document.count({
+            where: { userId },
+        });
+    },
+
     async findByIdAndUser(id: string, userId: string) {
-        return prisma.document.findUnique({
-            where: { id },
+        return prisma.document.findFirst({
+            where: { id, userId },
             include: {
                 // Latest summary
                 summaries: {

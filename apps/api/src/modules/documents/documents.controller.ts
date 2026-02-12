@@ -35,6 +35,20 @@ export const documentsController = {
         }
     },
 
+    async stats(req: Request, res: Response, next: NextFunction) {
+        try {
+            const userId = req.user!.id;
+            const stats = await documentsService.getStats(userId);
+
+            res.json({
+                ok: true,
+                data: stats,
+            });
+        } catch (error) {
+            next(error);
+        }
+    },
+
     async getOne(req: Request, res: Response, next: NextFunction) {
         try {
             const userId = req.user!.id;

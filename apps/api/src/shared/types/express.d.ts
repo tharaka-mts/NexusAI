@@ -1,0 +1,13 @@
+declare global {
+    namespace Express {
+        interface User {
+            id: string;
+            email: string;
+            username?: string;
+            googleId?: string | null;
+            role?: string;
+        }
+    }
+}
+
+export { };

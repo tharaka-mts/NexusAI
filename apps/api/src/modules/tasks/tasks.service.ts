@@ -8,6 +8,10 @@ export const tasksService = {
         return tasksRepository.findMany(userId, filters);
     },
 
+    async getStats(userId: string) {
+        return tasksRepository.statsByUser(userId);
+    },
+
     async updateTask(id: string, userId: string, input: UpdateTaskInput) {
         const task = await tasksRepository.findById(id, userId);
 

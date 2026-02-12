@@ -23,3 +23,9 @@ export interface TaskFilters {
     page: number;
     pageSize: number;
 }
+
+export interface TaskStats {
+    total: number;
+    completed: number;
+    open: number;
+}

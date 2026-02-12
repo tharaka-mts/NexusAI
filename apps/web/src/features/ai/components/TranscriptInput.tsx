@@ -7,6 +7,7 @@ interface TranscriptInputProps {
     onChange: (value: string) => void;
     onGenerate: () => void;
     isLoading?: boolean;
+    helperText?: string;
 }
 
 const TranscriptInput = ({
@@ -14,7 +15,8 @@ const TranscriptInput = ({
     value,
     onChange,
     onGenerate,
-    isLoading = false
+    isLoading = false,
+    helperText
 }: TranscriptInputProps) => {
     return (
         <div className={`space-y-4 ${className || ''}`}>
@@ -41,9 +43,9 @@ const TranscriptInput = ({
                     </div>
                 </div>
             </div>
-            <p className="text-sm text-center text-muted-foreground">
-                Guest Access: <span className="text-foreground font-medium">1 Free Run</span> • No credit card required
-            </p>
+            {helperText && (
+                <p className="text-sm text-center text-muted-foreground">{helperText}</p>
+            )}
         </div>
     );
 };

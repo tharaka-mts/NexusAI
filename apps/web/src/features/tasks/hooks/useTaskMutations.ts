@@ -1,14 +1,16 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { updateTask, deleteTask } from '../api/tasks.api';
 import { toast } from 'sonner';
+import { UpdateTaskInput } from '../types/tasks.types';
 
 export const useUpdateTask = () => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ id, data }: { id: string; data: any }) => updateTask(id, data),
+        mutationFn: ({ id, data }: { id: string; data: UpdateTaskInput }) => updateTask(id, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['tasks'] });
+            queryClient.invalidateQueries({ queryKey: ['tasks', 'stats'] });
             toast.success('Task updated');
         },
         onError: (error) => {
@@ -24,6 +26,7 @@ export const useDeleteTask = () => {
         mutationFn: (id: string) => deleteTask(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['tasks'] });
+            queryClient.invalidateQueries({ queryKey: ['tasks', 'stats'] });
             toast.success('Task deleted');
         },
         onError: (error) => {

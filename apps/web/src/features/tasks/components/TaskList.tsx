@@ -1,8 +1,10 @@
-import { Task } from "../types/tasks.types";
+import { useState } from "react";
+import { Task, UpdateTaskInput } from "../types/tasks.types";
 import { TaskRow } from "./TaskRow";
 import { TasksEmptyState } from "./TasksEmptyState";
 import { Loader2 } from "lucide-react";
 import { useUpdateTask, useDeleteTask } from "../hooks/useTaskMutations";
+import { TaskEditForm } from "./TaskEditForm";
 
 interface TaskListProps {
     tasks: Task[];
@@ -12,6 +14,7 @@ interface TaskListProps {
 export const TaskList = ({ tasks, isLoading }: TaskListProps) => {
     const updateTaskMutation = useUpdateTask();
     const deleteTaskMutation = useDeleteTask();
+    const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
 
     const handleToggleStatus = (task: Task) => {
         const newStatus = task.status === 'DONE' ? 'TODO' : 'DONE';
@@ -25,6 +28,17 @@ export const TaskList = ({ tasks, isLoading }: TaskListProps) => {
 
     const handleDelete = (id: string) => {
         deleteTaskMutation.mutate(id);
+    };
+
+    const handleEditSave = (id: string, data: UpdateTaskInput) => {
+        updateTaskMutation.mutate(
+            { id, data },
+            {
+                onSuccess: () => {
+                    setEditingTaskId(null);
+                },
+            }
+        );
     };
 
     if (isLoading) {
@@ -43,14 +57,24 @@ export const TaskList = ({ tasks, isLoading }: TaskListProps) => {
         <div className="space-y-3">
             {/* Pending mutations indicator could go here */}
             {tasks.map((task) => (
-                <TaskRow
-                    key={task.id}
-                    task={task}
-                    onToggleStatus={handleToggleStatus}
-                    onDelete={handleDelete}
-                    isUpdating={updateTaskMutation.isPending} // Naive, disables all rows during any update. Can refine by tracking ID if needed.
-                    isDeleting={deleteTaskMutation.isPending}
-                />
+                <div key={task.id}>
+                    <TaskRow
+                        task={task}
+                        onToggleStatus={handleToggleStatus}
+                        onEdit={() => setEditingTaskId(task.id)}
+                        onDelete={handleDelete}
+                        isUpdating={updateTaskMutation.isPending}
+                        isDeleting={deleteTaskMutation.isPending}
+                    />
+                    {editingTaskId === task.id && (
+                        <TaskEditForm
+                            task={task}
+                            isSaving={updateTaskMutation.isPending}
+                            onCancel={() => setEditingTaskId(null)}
+                            onSave={(data) => handleEditSave(task.id, data)}
+                        />
+                    )}
+                </div>
             ))}
         </div>
     );

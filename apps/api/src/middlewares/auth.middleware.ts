@@ -4,15 +4,6 @@ import { env } from '../config/env'; // Uses validated env
 import { AppError } from '../shared/errors/AppError';
 import { authRepository } from '../modules/auth/auth.repository';
 
-// Extend Express Request
-declare global {
-    namespace Express {
-        interface Request {
-            user?: any; // better: SafeUser
-        }
-    }
-}
-
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const token = req.cookies[env.AUTH_COOKIE_NAME]; // Uses env value found in src/config/env.ts

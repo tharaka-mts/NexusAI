@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { env } from '../config/env';
 
 const GUEST_COOKIE_NAME = 'guestId';
-const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
 export const ensureGuestSession = (req: Request, res: Response, next: NextFunction) => {
     // If user is authenticated, skip (assume req.user is populated by auth middleware if present)
@@ -20,7 +20,7 @@ export const ensureGuestSession = (req: Request, res: Response, next: NextFuncti
             httpOnly: true,
             secure: env.COOKIE_SECURE, // Use env var
             sameSite: 'lax',
-            maxAge: THIRTY_DAYS_MS,
+            maxAge: ONE_DAY_MS,
             path: '/',
         });
         // Attach to req so downstream can use it immediately

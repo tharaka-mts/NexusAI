@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import { Button } from '@/components/ui/Button';
 import { UserMenu } from '@/features/auth/components';
+import { ThemeToggle } from './ThemeToggle';
 
 const NavBar = () => {
     const pathname = usePathname();
@@ -12,7 +13,7 @@ const NavBar = () => {
     const isAuthPage = pathname === '/signin' || pathname === '/signup';
 
     return (
-        <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
+        <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/70 bg-card/75 dark:bg-background/80 backdrop-blur-xl shadow-[0_6px_28px_-22px_rgba(15,23,42,0.45)] dark:shadow-none">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
                     {/* Brand */}
@@ -27,6 +28,7 @@ const NavBar = () => {
 
                     {/* Right side */}
                     <div className="flex items-center gap-4">
+                        <ThemeToggle />
                         {!isLoading && (
                             <>
                                 {isAuthenticated ? (

@@ -13,9 +13,18 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
     const isDocumentPage = pathname.startsWith('/documents');
     const isTaskPage = pathname.startsWith('/tasks');
-    const selectedStyle: string = "px-3 py-2 bg-sidebar-accent rounded-md text-sm font-medium text-sidebar-accent-foreground"
-    const unselectedStyle: string = "px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50 rounded-md transition-colors cursor-pointer"
-    const selectedPage = isDocumentPage ? 'Documents' : isTaskPage ? 'Tasks' : 'Dashboard';
+    const isProfilePage = pathname.startsWith('/profile');
+    const selectedStyle =
+        "px-3 py-2 rounded-md text-sm font-medium bg-primary/16 text-primary ring-1 ring-primary/30 shadow-sm";
+    const unselectedStyle =
+        "px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/60 rounded-md transition-colors cursor-pointer";
+    const selectedPage = isDocumentPage
+        ? 'Documents'
+        : isTaskPage
+            ? 'Tasks'
+            : isProfilePage
+                ? 'Profile'
+                : 'Dashboard';
 
     useEffect(() => {
         if (isInitialized && !isAuthenticated) {
@@ -37,7 +46,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         <div className="min-h-screen">
             <NavBar />
             <div className="flex pt-16">
-                <aside className="w-64 border-r border-border/50 bg-sidebar/50 backdrop-blur-sm p-4 min-h-[calc(100vh-4rem)] fixed">
+                <aside className="w-64 border-r border-sidebar-border/80 bg-sidebar/80 backdrop-blur-md p-4 min-h-[calc(100vh-4rem)] fixed">
                     <nav className="space-y-2 mt-4">
                         <div className={selectedPage === 'Dashboard' ? selectedStyle : unselectedStyle}>
                             <Link href="/dashboard">Dashboard</Link>
@@ -47,6 +56,9 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                         </div>
                         <div className={selectedPage === 'Tasks' ? selectedStyle : unselectedStyle}>
                             <Link href="/tasks">Tasks</Link>
+                        </div>
+                        <div className={selectedPage === 'Profile' ? selectedStyle : unselectedStyle}>
+                            <Link href="/profile">Profile</Link>
                         </div>
                     </nav>
                 </aside>
